@@ -1,4 +1,4 @@
-import sys, click
+import os, sys, click
 import timeit
 import logging
 import numpy as np
@@ -42,96 +42,57 @@ def check_outliers(value):
     return fvalue
 
 
-def init_logging():
-    logfile = 'metrics.log'
-    try:
-        level = logging.INFO
-        format = '%(message)s'
-        handlers = [
-                logging.FileHandler(logfile),
-                logging.StreamHandler()]
-    except Exception as e:
-        print("Can't write to {}.".format(logfile))
-        print(e.__doc__)
-        sys.exit(0)
-    logging.basicConfig(level=level, format=format, handlers=handlers)
+def get_data():
+    df_train = pd.read_csv('resources/train.csv', header=None)
+    df_valid = pd.read_csv('resources/validation.csv', header=None)
 
+    df_train = df_train.drop(columns=[0])
+    df_valid = df_valid.drop(columns=[0])
+    df_train =df_train.tail(-1)
+    df_valid = df_valid.tail(-1)
+    # print(df_valid.iloc[:, 0])
+    df_train = df_train.rename(columns={1: "class"})
+    df_valid = df_valid.rename(columns={1: "class"})
+    df_train['class'] = df_train['class'].map({'M': 1, 'B': 0})
+    df_valid['class'] = df_valid['class'].map({'M': 1, 'B': 0})
+    # print(df_valid['class'])
+    df_train['vec_class'] = df_train['class'].map({1: [0, 1], 0: [1, 0]})
+    df_valid['vec_class'] = df_valid['class'].map({1: [0, 1], 0: [1, 0]})
 
-def describe(data):
-    clean_data = {k: data[k] for k in data if not np.isnan(data[k])}
-    values = np.sort(np.array(list(clean_data.values()), dtype=object))
-    count = len(clean_data)
-    stats = {'count': count}
-    stats['mean'] = sum(clean_data.values()) / count
-    stats['var'] = (
-            1
-            / (count - 1)
-            * np.sum(np.power(values - stats['mean'], 2)))
-    stats['std'] = np.sqrt(stats['var'])
-    return stats
-
-
-def feature_scaling(df, stats):
-    for subj in stats:
-        df[subj] = (df[subj] - stats[subj]['mean']) / stats[subj]['std']
-    return df
-
-
-def pre_process(df, stats, options):
-    df = feature_scaling(df, stats)
-    df = df.rename(columns={1: "class"})
-    df['class'] = df['class'].map({'M': 1, 'B': 0})
-    df['vec_class'] = df['class'].map({1: [0, 1], 0: [1, 0]})
-    if options['shuffle']:
-        df = df.sample(frac=1)
-    dfs = np.split(df, [int((len(df) * 0.80))], axis=0)
-
-    dfs[0].to_csv('train.csv')
-    dfs[1].to_csv('validation.csv')
-    
-    x_train = dfs[0].drop(columns=['class', 'vec_class']).to_numpy()
-    x_val = dfs[1].drop(columns=['class', 'vec_class']).to_numpy()
-    y_train = np.asarray(dfs[0]['vec_class'].tolist())
-    y_val = np.asarray(dfs[1]['vec_class'].tolist())
-    return (x_train, y_train), (x_val, y_val)
+    x_train = df_train.drop(columns=['class', 'vec_class']).to_numpy()
+    x_valid = df_valid.drop(columns=['class', 'vec_class']).to_numpy()
+    y_train = np.asarray(df_train['vec_class'].tolist(), dtype=object)
+    # print(df_valid['vec_class'])
+    y_valid = np.asarray(df_valid['vec_class'].tolist(), dtype=object)
+    # print(f'y valid {y_valid}')
+    return (x_train, y_train), (x_valid, y_valid)
 
 
 @click.command()
-@click.argument('dataset', nargs=1, default="data.csv")
 @click.option('-L', '--layers', type=check_not_negative_or_zero_int, default=5, help='Number of layers')
 @click.option('-U', '--units', type=check_not_negative_or_zero_int, default=12, help='Number of units per layer')
 @click.option('-lr', '--learning_rate', type=check_not_negative_or_zero_float, default=1.0, help="Learning Rate's value")
 @click.option('-b', '--batch_size', type=check_not_negative_int, default=40, help='Size of batch')
 @click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=300, help='Number of epochs')
-@click.option('-s', '--shuffle', is_flag=True, help='Shuffle the data set')
-def main(dataset, layers, units, learning_rate, batch_size, epochs, shuffle):
+def main(layers, units, learning_rate, batch_size, epochs):
     options = {
         'layers': layers,
         'units': units,
         'learning_rate': learning_rate,
         'batch_size': batch_size,
-        'epochs': epochs,
-        'shuffle': shuffle,
+        'epochs': epochs
     }
-    print(options)
 
-    # start = timeit.default_timer()
-    # init_logging()
-    
+    if (os.path.isfile('resources/train.csv') is False or
+        os.path.isfile('resources/validation.csv') is False):
+        return (print('Please split data first'))
     try:
-        data = pd.read_csv(dataset, header=None)
-        data = data.drop(columns=[0])
-        stats = {
-            column: describe(sub_dict)
-            for column, sub_dict in
-            data.select_dtypes(include='number').to_dict().items()
-        }
-        train_data, val_data = pre_process(data, stats, options)
+        train_data, val_data = get_data()
         options['inputs'] = len(train_data[0][0])
         mlp = MLP(options)
         mlp.train(train_data[0], train_data[1], val_data)
 
-        np.save('model.npy', np.array([mlp.layers, mlp.weights, mlp.biases, mlp.activations], dtype=object))
+        np.save('model.npy', np.array([options, mlp.weights, mlp.biases, mlp.activations], dtype=object))
     except Exception as e:
         print(f'{e}')
         sys.exit(1)

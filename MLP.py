@@ -57,8 +57,13 @@ class MLP:
     def compute_loss(self, y_true, y_pred):
         # Calculate the binary cross-entropy loss with softmax for binary classification
         epsilon = 1e-15
-        y_true=y_true
         y_pred = np.clip(y_pred.T, epsilon, 1 - epsilon)
+        # print(f'y_true {y_true}')
+        # print(f'y_pred {y_pred}')
+        # print(f'y_true shape {y_true.shape}')
+        # print(f'y_pred shape {y_pred.shape}')
+        # print(f'y_true type {type(y_true)}')
+        # print(f'y_pred type {type(y_pred)}')
         loss = - (y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
         return np.mean(loss)
 
@@ -72,8 +77,15 @@ class MLP:
             dW = np.dot(dZ, activations[i].T) / m
             db = np.sum(dZ, axis=1, keepdims=True) / m
 
+            self.weights[i] = self.weights[i].astype(np.float64)
+            dW = dW.astype(np.float64)
+
+            self.biases[i] = self.biases[i].astype(np.float64)
+            db = db.astype(np.float64)
+
             self.weights[i] -= self.learning_rate * dW
             self.biases[i] -= self.learning_rate * db
+
             dA_prev = np.dot(self.weights[i].T, dZ)
 
 
@@ -95,14 +107,13 @@ class MLP:
 
     def train(self, X, y, validation_data=None):
         self.initialize_weights()
-        for epoch in range(1, self.epochs + 1):
+        for epoch in range(0, self.epochs + 1):
             for i in range(0, X.shape[0], self.batch_size):
                 X_batch = X[i:i+self.batch_size]
                 y_batch = y[i:i+self.batch_size]
 
                 activations = self.forward_propagation(X_batch)
                 loss = self.compute_loss(y_batch, activations[-1])
-
                 self.backward_propagation(X_batch, y_batch, activations)
 
             # Calculate accuracy for training data
