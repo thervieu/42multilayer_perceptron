@@ -86,6 +86,9 @@ def pre_process(df, stats, options):
         df = df.sample(frac=1)
     dfs = np.split(df, [int((len(df) * 0.80))], axis=0)
 
+    dfs[0].to_csv('train.csv')
+    dfs[1].to_csv('validation.csv')
+    
     x_train = dfs[0].drop(columns=['class', 'vec_class']).to_numpy()
     x_val = dfs[1].drop(columns=['class', 'vec_class']).to_numpy()
     y_train = np.asarray(dfs[0]['vec_class'].tolist())
@@ -95,15 +98,13 @@ def pre_process(df, stats, options):
 
 @click.command()
 @click.argument('dataset', nargs=1, default="data.csv")
-@click.option('-L', '--layers', type=check_not_negative_or_zero_int, default=4, help='Number of layers')
+@click.option('-L', '--layers', type=check_not_negative_or_zero_int, default=5, help='Number of layers')
 @click.option('-U', '--units', type=check_not_negative_or_zero_int, default=12, help='Number of units per layer')
 @click.option('-lr', '--learning_rate', type=check_not_negative_or_zero_float, default=1.0, help="Learning Rate's value")
 @click.option('-b', '--batch_size', type=check_not_negative_int, default=40, help='Size of batch')
-@click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=80, help='Number of epochs')
+@click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=300, help='Number of epochs')
 @click.option('-s', '--shuffle', is_flag=True, help='Shuffle the data set')
-@click.option('-p', '--patience', type=check_not_negative_int, default=0, help='Number of epochs waited to execute early stopping')
-@click.option('-bm', '--bonus_metrics', is_flag=True, help='Precision, Recall and F Score metrics')
-def main(dataset, layers, units, learning_rate, batch_size, epochs, shuffle, patience, bonus_metrics):
+def main(dataset, layers, units, learning_rate, batch_size, epochs, shuffle):
     options = {
         'layers': layers,
         'units': units,
@@ -111,8 +112,6 @@ def main(dataset, layers, units, learning_rate, batch_size, epochs, shuffle, pat
         'batch_size': batch_size,
         'epochs': epochs,
         'shuffle': shuffle,
-        'patience': patience,
-        'bonus_metrics': bonus_metrics
     }
     print(options)
 
@@ -132,11 +131,10 @@ def main(dataset, layers, units, learning_rate, batch_size, epochs, shuffle, pat
         mlp = MLP(options)
         mlp.train(train_data[0], train_data[1], val_data)
 
+        np.save('model.npy', np.array([mlp.layers, mlp.weights, mlp.biases, mlp.activations], dtype=object))
     except Exception as e:
         print(f'{e}')
         sys.exit(1)
-
-
 
 
 if __name__=="__main__":

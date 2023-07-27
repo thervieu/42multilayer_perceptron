@@ -15,11 +15,9 @@ class MLP:
         self.learning_rate = options['learning_rate']
         self.batch_size = options['batch_size']
         self.epochs = options['epochs']
-        self.patience = options['patience']
         self.weights = []
         self.biases = []
         self.activations = []
-        self.patience_count = 0
 
     def initialize_weights(self):
         # Randomly initialize weights and biases for each layer
@@ -29,8 +27,12 @@ class MLP:
             self.weights.append(np.random.randn(output_size, input_size))
             self.biases.append(np.random.randn(output_size, 1))
             self.activations.append('sigmoid')
-        
         self.activations[-1] = 'softmax'
+
+
+    def set_weights(self, array):
+        # Randomly initialize weights and biases for each layer
+        self.activations = array[-1]
 
 
     def forward_propagation(self, X):
@@ -93,7 +95,7 @@ class MLP:
 
     def train(self, X, y, validation_data=None):
         self.initialize_weights()
-        for epoch in range(self.epochs):
+        for epoch in range(1, self.epochs + 1):
             for i in range(0, X.shape[0], self.batch_size):
                 X_batch = X[i:i+self.batch_size]
                 y_batch = y[i:i+self.batch_size]
@@ -102,12 +104,11 @@ class MLP:
                 loss = self.compute_loss(y_batch, activations[-1])
 
                 self.backward_propagation(X_batch, y_batch, activations)
-            
+
             # Calculate accuracy for training data
             train_predictions = self.predict(X)
             train_accuracy = self.accuracy(y, train_predictions)
 
-            print(f"Epoch {epoch+1}/{self.epochs}, Loss: {loss:.2f}, Accuracy: {train_accuracy:.2f}")
 
             if validation_data:
                 X_val, y_val = validation_data
@@ -116,19 +117,13 @@ class MLP:
 
 
                 # Calculate accuracy for validation data
-                # val_predictions = self.predict(X_val)
-                # val_accuracy = self.accuracy(y_val, val_predictions)
-                # print(f"Validation: Epoch {epoch+1}/{self.epochs}, Loss: {loss}, Accuracy: {train_accuracy}")
-                # print(f"Validation Accuracy: {val_accuracy:.2f}")
-                if self.patience > 0:
-                    if val_loss < self.best_loss:
-                        self.best_loss = val_loss
-                        self.patience_count = 0
-                    else:
-                        self.patience_count += 1
-                    if self.patience_count >= self.patience:
-                        print("Early stopping. No improvement in validation loss.")
-                        return
+                val_predictions = self.predict(X_val)
+                val_accuracy = self.accuracy(y_val, val_predictions)
+                if epoch%10==0:
+                    print(f"Epoch {epoch:03d}/{self.epochs}, loss: {loss:.3f}, val_loss: {val_loss:.3f}, acc: {train_accuracy:.3f}, val_acc: {val_accuracy:.3f}")
+
+            elif epoch%10==0:
+                print(f"Epoch {epoch}/{self.epochs}, Loss: {loss:.3f}, Accuracy: {train_accuracy:.3f}")
 
 
     def predict(self, X):
