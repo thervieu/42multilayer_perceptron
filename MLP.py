@@ -19,6 +19,12 @@ class MLP:
         self.biases = []
         self.activations = []
 
+        # metrics
+        self.train_losses = []
+        self.valid_losses = []
+        self.train_accuracies = []
+        self.valid_accuracies = []
+
     def initialize_weights(self):
         # Randomly initialize weights and biases for each layer
         for i in range(1, len(self.layers)):
@@ -108,28 +114,39 @@ class MLP:
     def train(self, X, y, validation_data=None):
         self.initialize_weights()
         for epoch in range(0, self.epochs + 1):
+            total_loss = 0.0
+            correct_predictions = 0
             for i in range(0, X.shape[0], self.batch_size):
                 X_batch = X[i:i+self.batch_size]
                 y_batch = y[i:i+self.batch_size]
 
                 activations = self.forward_propagation(X_batch)
+                
                 loss = self.compute_loss(y_batch, activations[-1])
+                total_loss += loss * X_batch.shape[0]
+                
                 self.backward_propagation(X_batch, y_batch, activations)
 
-            # Calculate accuracy for training data
+                batch_predictions = self.predict(X_batch)
+                batch_correct = np.sum(np.argmax(batch_predictions, axis=0) == np.argmax(y_batch.T, axis=0))
+                correct_predictions += batch_correct
+
             train_predictions = self.predict(X)
             train_accuracy = self.accuracy(y, train_predictions)
 
-
+            train_loss = total_loss / X.shape[0]
+            self.train_losses.append(train_loss)
+            self.train_accuracies.append(train_accuracy)
             if validation_data:
                 X_val, y_val = validation_data
                 val_activations = self.forward_propagation(X_val)
                 val_loss = self.compute_loss(y_val, val_activations[-1])
-
+                self.valid_losses.append(val_loss)
 
                 # Calculate accuracy for validation data
                 val_predictions = self.predict(X_val)
                 val_accuracy = self.accuracy(y_val, val_predictions)
+                self.valid_accuracies.append(val_accuracy)
                 if epoch%10==0:
                     print(f"Epoch {epoch:03d}/{self.epochs}, loss: {loss:.3f}, val_loss: {val_loss:.3f}, acc: {train_accuracy:.3f}, val_acc: {val_accuracy:.3f}")
 

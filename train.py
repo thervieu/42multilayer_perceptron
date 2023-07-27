@@ -1,11 +1,10 @@
 import os, sys, click
-import timeit
-import logging
 import numpy as np
 import pandas as pd
 
 from MLP import MLP
 
+import matplotlib.pyplot as plt
 
 def check_not_negative_int(value):
     ivalue = int(value)
@@ -68,13 +67,42 @@ def get_data():
     return (x_train, y_train), (x_valid, y_valid)
 
 
+def plot_losses_and_accuracies(mlp):
+    # Plot losses and accuracies
+    epochs = np.arange(0, mlp.epochs + 1)
+
+    plt.figure(figsize=(12, 5))
+
+    # Plot Training Loss
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, mlp.train_losses, label='Training Loss')
+    plt.plot(epochs, mlp.valid_losses, label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    # Plot Training Accuracy
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, mlp.train_accuracies, label='Training Accuracy')
+    plt.plot(epochs, mlp.valid_accuracies, label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+    
+
+
 @click.command()
 @click.option('-L', '--layers', type=check_not_negative_or_zero_int, default=5, help='Number of layers')
 @click.option('-U', '--units', type=check_not_negative_or_zero_int, default=12, help='Number of units per layer')
 @click.option('-lr', '--learning_rate', type=check_not_negative_or_zero_float, default=1.0, help="Learning Rate's value")
 @click.option('-b', '--batch_size', type=check_not_negative_int, default=40, help='Size of batch')
 @click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=300, help='Number of epochs')
-def main(layers, units, learning_rate, batch_size, epochs):
+@click.option('-p', '--plot', is_flag=True, help='Plot the graphs')
+def main(layers, units, learning_rate, batch_size, epochs, plot):
     options = {
         'layers': layers,
         'units': units,
@@ -88,10 +116,14 @@ def main(layers, units, learning_rate, batch_size, epochs):
         return (print('Please split data first'))
     try:
         train_data, val_data = get_data()
+
         options['inputs'] = len(train_data[0][0])
         mlp = MLP(options)
         mlp.train(train_data[0], train_data[1], val_data)
-
+        
+        if plot:
+            plot_losses_and_accuracies(mlp)
+        
         np.save('model.npy', np.array([options, mlp.weights, mlp.biases, mlp.activations], dtype=object))
     except Exception as e:
         print(f'{e}')

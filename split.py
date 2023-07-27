@@ -24,11 +24,10 @@ def feature_scaling(df, stats):
     return df
 
 
-def pre_process(df, stats, shuffle):
+def pre_process(df, stats):
     df = feature_scaling(df, stats)
     
-    if shuffle:
-        df = df.sample(frac=1)
+    df = df.sample(frac=1)
 
     dfs = np.split(df, [int((len(df) * 0.80))], axis=0)
     return dfs
@@ -36,9 +35,8 @@ def pre_process(df, stats, shuffle):
 
 @click.command()
 @click.argument('dataset', nargs=1, default="resources/data.csv")
-@click.option('-s', '--shuffle', is_flag=True, help='Shuffle the data set')
-@click.option('-s', '--random', is_flag=True, help='Randomize the shuffle')
-def main(dataset, shuffle, random):
+@click.option('-r', '--random', is_flag=True, help='Random seed')
+def main(dataset, random):
     if os.path.isfile(dataset) is False:
         return print(f'{dataset} does not exist')
 
@@ -52,7 +50,7 @@ def main(dataset, shuffle, random):
         for column, sub_dict in
         data.select_dtypes(include='number').to_dict().items()
     }
-    dfs = pre_process(data, stats, shuffle)
+    dfs = pre_process(data, stats)
 
     dfs[0].to_csv('resources/train.csv')
     dfs[1].to_csv('resources/validation.csv')
