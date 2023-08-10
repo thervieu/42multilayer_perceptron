@@ -65,12 +65,6 @@ class MLP:
         # Calculate the binary cross-entropy loss with softmax for binary classification
         epsilon = 1e-15
         y_pred = np.clip(y_pred.T, epsilon, 1 - epsilon)
-        # print(f'y_true {y_true}')
-        # print(f'y_pred {y_pred}')
-        # print(f'y_true shape {y_true.shape}')
-        # print(f'y_pred shape {y_pred.shape}')
-        # print(f'y_true type {type(y_true)}')
-        # print(f'y_pred type {type(y_pred)}')
         loss = - (y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
         return np.mean(loss)
 
