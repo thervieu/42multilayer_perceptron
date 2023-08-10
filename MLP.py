@@ -10,6 +10,7 @@ def initialize_layers(inputs, units, num_layers, classes=2):
 
 class MLP:
     def __init__(self, options):
+        np.random.seed(42)
         self.layers = initialize_layers(options['inputs'], options['units'], options['layers'])
         self.units = options['units']
         self.learning_rate = options['learning_rate']

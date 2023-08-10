@@ -35,13 +35,11 @@ def pre_process(df, stats):
 
 @click.command()
 @click.argument('dataset', nargs=1, default="resources/data.csv")
-@click.option('-r', '--random', is_flag=True, help='Random seed')
-def main(dataset, random):
+def main(dataset):
     if os.path.isfile(dataset) is False:
         return print(f'{dataset} does not exist')
 
-    if random is False:
-        np.random.seed(42)
+    np.random.seed(42)
 
     data = pd.read_csv(dataset, header=None)
     data = data.drop(columns=[0])

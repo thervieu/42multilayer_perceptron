@@ -55,7 +55,8 @@ def main():
     patient_pred = mlp.predict(np.asarray([X_val[nb]]))
 
     type_cancer = ['Benign', 'Malignent']
-    print(f'Patient number {nb}\'s cancer : {type_cancer[np.argmax(patient_pred)]}')
+    print(f'Patient number {nb}\'s predicition : {patient_pred[0]}')
+    print(f'Patient number {nb}\'s cancer is {type_cancer[np.argmax(patient_pred)]}')
 
 
 

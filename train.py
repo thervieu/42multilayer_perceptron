@@ -75,6 +75,7 @@ def plot_losses_and_accuracies(mlp):
 
     # Plot Training Loss
     plt.subplot(1, 2, 1)
+    plt.title('Loss over epochs')
     plt.plot(epochs, mlp.train_losses, label='Training Loss')
     plt.plot(epochs, mlp.valid_losses, label='Validation Loss')
     plt.xlabel('Epoch')
@@ -83,6 +84,7 @@ def plot_losses_and_accuracies(mlp):
 
     # Plot Training Accuracy
     plt.subplot(1, 2, 2)
+    plt.title('Accuracy over epochs')
     plt.plot(epochs, mlp.train_accuracies, label='Training Accuracy')
     plt.plot(epochs, mlp.valid_accuracies, label='Validation Accuracy')
     plt.xlabel('Epoch')
