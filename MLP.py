@@ -3,7 +3,7 @@ import numpy as np
 
 def initialize_layers(inputs, units, num_layers, classes=2):
     layers = [inputs]
-    layers.extend([units for _ in range(num_layers - 2)])  # Hidden layers
+    layers.extend([units for _ in range(num_layers - 1)])  # Hidden layers
     layers.append(classes)
     return layers
 
@@ -19,6 +19,7 @@ class MLP:
         self.weights = []
         self.biases = []
         self.activations = []
+        self.weight_decay_lambda = 0.02
 
         # metrics
         self.train_losses = []
@@ -65,6 +66,7 @@ class MLP:
         # Calculate the binary cross-entropy loss with softmax for binary classification
         epsilon = 1e-15
         y_pred = np.clip(y_pred.T, epsilon, 1 - epsilon)
+
         loss = - (y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
         return np.mean(loss)
 
@@ -72,10 +74,10 @@ class MLP:
     def backward_propagation(self, X, y_true, activations):
         # Perform backward propagation and update weights and biases
         m = X.shape[0]
-        dA_prev = 2 * (activations[-1] - y_true.T) / m
+        dA_prev = activations[-1] - y_true.T
         for i in range(len(self.layers) - 2, -1, -1):
             dZ = dA_prev * self.apply_activation_derivative(activations[i + 1], self.activations[i])
-            dW = np.dot(dZ, activations[i].T) / m
+            dW = (np.dot(dZ, activations[i].T) + self.weight_decay_lambda * self.weights[i]) / m
             db = np.sum(dZ, axis=1, keepdims=True) / m
 
             self.weights[i] = self.weights[i].astype(np.float64)

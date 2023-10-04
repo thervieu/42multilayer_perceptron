@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def check_not_negative_int(value):
     ivalue = int(value)
     if ivalue < 0:
-        raise click.BadParameter("Value must not be negative.")
+        raise click.BadParameter("Value must not be a negative integer.")
     return ivalue
 
 
@@ -23,21 +23,14 @@ def check_not_negative_or_zero_int(value):
 def check_not_negative_float(value):
     fvalue = float(value)
     if fvalue < 0:
-        raise click.BadParameter("Value must not be negative.")
+        raise click.BadParameter("Value must not be a negative float.")
     return fvalue
 
 
 def check_not_negative_or_zero_float(value):
     fvalue = float(value)
     if fvalue <= 0:
-        raise click.BadParameter("Value must be a positive number.")
-    return fvalue
-
-
-def check_outliers(value):
-    fvalue = float(value)
-    if fvalue < 2.0 or fvalue > 4.0:
-        raise click.BadParameter("Outliers must be between 2 and 4.")
+        raise click.BadParameter("Value must be a positive float.")
     return fvalue
 
 
@@ -47,23 +40,23 @@ def get_data():
 
     df_train = df_train.drop(columns=[0])
     df_valid = df_valid.drop(columns=[0])
-    df_train =df_train.tail(-1)
+    
+    df_train = df_train.tail(-1)
     df_valid = df_valid.tail(-1)
-    # print(df_valid.iloc[:, 0])
+
     df_train = df_train.rename(columns={1: "class"})
     df_valid = df_valid.rename(columns={1: "class"})
     df_train['class'] = df_train['class'].map({'M': 1, 'B': 0})
     df_valid['class'] = df_valid['class'].map({'M': 1, 'B': 0})
-    # print(df_valid['class'])
     df_train['vec_class'] = df_train['class'].map({1: [0, 1], 0: [1, 0]})
     df_valid['vec_class'] = df_valid['class'].map({1: [0, 1], 0: [1, 0]})
 
     x_train = df_train.drop(columns=['class', 'vec_class']).to_numpy()
     x_valid = df_valid.drop(columns=['class', 'vec_class']).to_numpy()
+    
     y_train = np.asarray(df_train['vec_class'].tolist(), dtype=object)
-    # print(df_valid['vec_class'])
     y_valid = np.asarray(df_valid['vec_class'].tolist(), dtype=object)
-    # print(f'y valid {y_valid}')
+
     return (x_train, y_train), (x_valid, y_valid)
 
 
@@ -98,11 +91,11 @@ def plot_losses_and_accuracies(mlp):
 
 
 @click.command()
-@click.option('-L', '--layers', type=check_not_negative_or_zero_int, default=5, help='Number of layers')
-@click.option('-U', '--units', type=check_not_negative_or_zero_int, default=12, help='Number of units per layer')
+@click.option('-l', '--layers', type=check_not_negative_or_zero_int, default=4, help='Number of layers')
+@click.option('-u', '--units', type=check_not_negative_or_zero_int, default=12, help='Number of units per layer')
 @click.option('-lr', '--learning_rate', type=check_not_negative_or_zero_float, default=1.0, help="Learning Rate's value")
 @click.option('-b', '--batch_size', type=check_not_negative_int, default=40, help='Size of batch')
-@click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=300, help='Number of epochs')
+@click.option('-e', '--epochs', type=check_not_negative_or_zero_int, default=200, help='Number of epochs')
 @click.option('-p', '--plot', is_flag=True, help='Plot the graphs')
 def main(layers, units, learning_rate, batch_size, epochs, plot):
     options = {

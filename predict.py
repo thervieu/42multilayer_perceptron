@@ -35,7 +35,7 @@ def main():
     if os.path.isfile('model.npy') is False:
         return print('model.npy not found. Please train model first')
     if os.path.isfile('resources/validation.csv') is False:
-        return print('model.npy not found. Please train model first')
+        return print('validation.csv not found. Please train model first')
 
 
     mlp = get_model()
