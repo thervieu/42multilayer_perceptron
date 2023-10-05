@@ -10,7 +10,6 @@ def initialize_layers(inputs, units, num_layers, classes=2):
 
 class MLP:
     def __init__(self, options):
-        np.random.seed(42)
         self.layers = initialize_layers(options['inputs'], options['units'], options['layers'])
         self.units = options['units']
         self.learning_rate = options['learning_rate']
@@ -125,7 +124,7 @@ class MLP:
                 self.backward_propagation(X_batch, y_batch, activations)
 
                 batch_predictions = self.predict(X_batch)
-                batch_correct = np.sum(np.argmax(batch_predictions, axis=0) == np.argmax(y_batch.T, axis=0))
+                batch_correct = np.sum(np.argmax(batch_predictions, axis=0) == np.argmax(y_batch, axis=0))
                 correct_predictions += batch_correct
 
             train_predictions = self.predict(X)

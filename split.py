@@ -39,8 +39,6 @@ def main(dataset):
     if os.path.isfile(dataset) is False:
         return print(f'{dataset} does not exist')
 
-    np.random.seed(42)
-
     data = pd.read_csv(dataset, header=None)
     data = data.drop(columns=[0])
     stats = {

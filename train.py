@@ -111,7 +111,6 @@ def main(layers, units, learning_rate, batch_size, epochs, plot):
         return (print('Please split data first'))
     try:
         train_data, val_data = get_data()
-
         options['inputs'] = len(train_data[0][0])
         mlp = MLP(options)
         mlp.train(train_data[0], train_data[1], val_data)
