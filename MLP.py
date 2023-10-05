@@ -73,7 +73,7 @@ class MLP:
     def backward_propagation(self, X, y_true, activations):
         # Perform backward propagation and update weights and biases
         m = X.shape[0]
-        dA_prev = activations[-1] - y_true.T
+        dA_prev = 2 * (activations[-1] - y_true.T)
         for i in range(len(self.layers) - 2, -1, -1):
             dZ = dA_prev * self.apply_activation_derivative(activations[i + 1], self.activations[i])
             dW = (np.dot(dZ, activations[i].T) + self.weight_decay_lambda * self.weights[i]) / m
