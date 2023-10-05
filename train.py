@@ -119,6 +119,8 @@ def main(layers, units, learning_rate, batch_size, epochs, plot):
             plot_losses_and_accuracies(mlp)
         
         np.save('model.npy', np.array([options, mlp.weights, mlp.biases, mlp.activations], dtype=object))
+        print('\nsaved model \'./saved_model.npy\'')
+
     except Exception as e:
         print(f'{e}')
         sys.exit(1)
