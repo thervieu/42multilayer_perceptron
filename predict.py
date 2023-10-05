@@ -50,7 +50,7 @@ def main():
     print('loss and accuracy on validation dataset:')
     print(f'val_loss: {val_loss:.3f}, val_acc: {val_accuracy:.3f}\n\n')
 
-    nb = random.randint(1, 114)
+    nb = random.randint(1, 113)
     print(f'Randomly chosen patient: number {nb}\n')
     
     patient_pred = mlp.predict(np.asarray([X_val[nb]]))
