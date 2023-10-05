@@ -47,17 +47,18 @@ def main():
     # Calculate accuracy for validation data
     val_predictions = mlp.predict(X_val)
     val_accuracy = mlp.accuracy(y_val, val_predictions)
-    print(f'val_loss: {val_loss:.3f}, val_acc: {val_accuracy:.3f}\n')
+    print('loss and accuracy on validation dataset:')
+    print(f'val_loss: {val_loss:.3f}, val_acc: {val_accuracy:.3f}\n\n')
 
-    print(f'Random Example:')
     nb = random.randint(1, 114)
+    print(f'Randomly chosen patient: number {nb}\n')
     
     patient_pred = mlp.predict(np.asarray([X_val[nb]]))
 
     type_cancer = ['Benign', 'Malignent']
-    print(f'Patient number {nb}\'s predicition : {patient_pred[0]}')
-    print(f'Patient number {nb}\'s cancer is {type_cancer[np.argmax(patient_pred)]}')
-
+    print(f'  Predicition : {patient_pred[0]}')
+    print(f'  Model: Cancer is {type_cancer[np.argmax(patient_pred)]}')
+    print(f'  Truth: Cancer is {type_cancer[np.argmax(y_val[nb])]}')
 
 
 if __name__=="__main__":
